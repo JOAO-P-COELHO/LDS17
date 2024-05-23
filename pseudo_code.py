@@ -3,20 +3,16 @@
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 import time
-
-options = webdriver.EdgeOptions()
-options.add_experimental_option("detach", True)
-
-driver = webdriver.Edge(service=s, options=options)
 
 # Model:
 class VerificadorWebsite:
     def __init__(self):
-        # Configuração do WebDriver
-        self.driver = webdriver.Chrome()  # Certifique-se de ter o ChromeDriver no PATH ou especifique o caminho diretamente
+        # Configuração do WebDriver para Chrome
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("detach", True)
+        self.driver = webdriver.Chrome(options=options)  # Certifique-se de ter o ChromeDriver no PATH ou especifique o caminho diretamente
 
     def verificar_disponibilidade(self, url):
         try:
@@ -27,26 +23,11 @@ class VerificadorWebsite:
             print(f"Erro ao carregar a página: {e}")
             return False
 
-    def verificar_navegacao_subpaginas(self):
-        # Exemplo: navegando para a página de "Sobre" do Google
+    def verificar_elemento(self, texto_procurado):
         try:
-            link_sobre = self.driver.find_element(By.LINK_TEXT, "Sobre")
-            link_sobre.click()
-            time.sleep(2)
-            return True
-        except NoSuchElementException as e:
-            print(f"Erro ao navegar para a subpágina: {e}")
-            return False
-
-    def realizar_pesquisa(self, termo_pesquisa):
-        try:
-            search_box = self.driver.find_element(By.NAME, "q")
-            search_box.send_keys(termo_pesquisa)
-            search_box.send_keys(Keys.RETURN)
-            time.sleep(2)  # Esperar um pouco para os resultados carregarem
-            return True
-        except NoSuchElementException as e:
-            print(f"Erro ao realizar a pesquisa: {e}")
+            elemento = self.driver.find_element(By.XPATH, f"//*[contains(text(), '{texto_procurado}')]")
+            return True if elemento else False
+        except NoSuchElementException:
             return False
 
     def fechar_driver(self):
@@ -68,28 +49,24 @@ class ControladorVerificacao:
 
     def iniciar_verificacao(self):
         # Verificação de disponibilidade da página principal
-        resultado_disponibilidade = self.model.verificar_disponibilidade("https://www.google.com")
+        resultado_disponibilidade = self.model.verificar_disponibilidade("https://www.coisaspt.pt/")
         self.view.exibir_resultado_verificacao(resultado_disponibilidade)
 
         if not resultado_disponibilidade:
             return  # Se a página não estiver disponível, não continuar
 
-        # Verificação de navegação das subpáginas (este passo é opcional e depende da estrutura do site)
-        # resultado_navegacao = self.model.verificar_navegacao_subpaginas()
-        # self.view.exibir_resultado_verificacao(resultado_navegacao)
-
-        # Verificação de pesquisa no site
-        resultado_pesquisa = self.model.realizar_pesquisa("Universidade Aberta")
-        self.view.exibir_resultado_verificacao(resultado_pesquisa)
+        # Verificação do elemento com o texto "Coisas Novas"
+        resultado_elemento = self.model.verificar_elemento("Coisas Novas")
+        self.view.exibir_resultado_verificacao(resultado_elemento)
 
         # Adiciona um tempo de espera para manter o navegador aberto
-        print("Verificação completa. O navegador permanecerá aberto por 60 segundos para inspeção.")
-        time.sleep(60)
+        print(f"Verificação completa. O navegador permanecerá aberto por {close_value} segundos para inspeção.")
+        time.sleep(close_value)
 
         # Fechar o driver no final (comentado para manter o Chrome aberto)
-        # self.model.fechar_driver()
+        self.model.fechar_driver()
 
-
+close_value = 5  # in seconds
 # Inicialização e execução da aplicação
 if __name__ == "__main__":
     model = VerificadorWebsite()
