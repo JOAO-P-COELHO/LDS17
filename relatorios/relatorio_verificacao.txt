@@ -1,0 +1,7 @@
+Abrindo página principal: https://www.pingodoce.pt/receitas/coleccoes/cremes/
+Interação com a página principal concluída com sucesso.
+Foram encontradas 246 subpáginas.
+Subpágina aberta com sucesso.
+Capturas de tela salvas:
+capturas\pagina_principal.png
+capturas\subpagina_2.png
