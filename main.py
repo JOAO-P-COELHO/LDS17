@@ -1,4 +1,4 @@
-# Não esquecer de instalar a biblioteca do selenium: 
+# Não esquecer de instalar a biblioteca do selenium:
 # Escrever "pip install selenium" no terminal
 
 import logging
@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from subpagina import Subpagina
 
 # Configuração de Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -48,7 +49,7 @@ class VerificadorWebsite:
                 href = link.get_attribute('href')
                 text = link.text.strip() if link.text.strip() else href
                 if href and href != "#":
-                    subpaginas.append((text, href))
+                    subpaginas.append(Subpagina(text, href))
             self.resultados.append(f"Foram encontradas {len(subpaginas)} subpáginas.")
             return subpaginas
         except Exception as e:
@@ -56,21 +57,21 @@ class VerificadorWebsite:
             self.resultados.append(f"Erro ao encontrar subpáginas: {e}")
             return []
 
-    def verificar_disponibilidade_subpagina(self, subpagina_text, subpagina_href):
+    def verificar_disponibilidade_subpagina(self, subpagina):
         try:
             link_subpagina = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.LINK_TEXT, subpagina_text))
+                EC.element_to_be_clickable((By.LINK_TEXT, subpagina.texto))
             )
             link_subpagina.click()
             input("Interaja com a subpágina e pressione Enter para continuar...")
             return "Subpágina aberta com sucesso."
         except (NoSuchElementException, TimeoutException):
-            logging.error(f"Subpágina '{subpagina_text}' não encontrada ou não clicável.")
-            self.resultados.append(f"Subpágina '{subpagina_text}' não encontrada ou não clicável.")
+            logging.error(f"Subpágina '{subpagina.texto}' não encontrada ou não clicável.")
+            self.resultados.append(f"Subpágina '{subpagina.texto}' não encontrada ou não clicável.")
             return "Subpágina não encontrada ou não clicável."
         except ElementClickInterceptedException:
-            logging.error(f"Elemento clicável foi interceptado ao tentar acessar '{subpagina_text}'.")
-            self.resultados.append(f"Elemento clicável foi interceptado ao tentar acessar '{subpagina_text}'.")
+            logging.error(f"Elemento clicável foi interceptado ao tentar acessar '{subpagina.texto}'.")
+            self.resultados.append(f"Elemento clicável foi interceptado ao tentar acessar '{subpagina.texto}'.")
             return "Elemento clicável foi interceptado."
         except Exception as e:
             logging.error(f"Erro ao verificar a subpágina: {e}")
@@ -95,8 +96,8 @@ class InterfaceUsuarioVerificacao:
             logging.info("Não foram encontradas subpáginas.")
         else:
             print(f"Foram encontradas {len(subpaginas)} subpáginas.")
-            for i, (subpagina_text, subpagina_href) in enumerate(subpaginas[:5], 1):
-                print(f"{i}. {subpagina_text}")
+            for i, subpagina in enumerate(subpaginas[:5], 1):
+                print(f"{i}. {subpagina.texto}")
             if len(subpaginas) > 5:
                 print("* Existem mais subpáginas que podem ser verificadas.")
 
@@ -126,16 +127,16 @@ class ControladorVerificacao:
         if subpaginas:
             escolha = int(self.view.obter_escolha_subpagina()) - 1
             if 0 <= escolha < len(subpaginas):
-                subpagina_text, subpagina_href = subpaginas[escolha]
-                resultado_verificacao = self.model.verificar_disponibilidade_subpagina(subpagina_text, subpagina_href)
+                subpagina = subpaginas[escolha]
+                resultado_verificacao = self.model.verificar_disponibilidade_subpagina(subpagina)
                 self.model.capturar_tela(f"subpagina_{escolha + 1}.png")
                 self.model.resultados.append(resultado_verificacao)
                 self.view.exibir_resultado_verificacao(resultado_verificacao)
             else:
                 logging.info("Escolha inválida.")
 
-        self.model.fechar_navegador()
         self.gerar_relatorio()
+        self.model.fechar_navegador()
 
     def gerar_relatorio(self):
         if not os.path.exists("relatorios"):

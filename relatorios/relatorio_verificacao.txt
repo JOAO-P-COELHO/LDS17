@@ -1,6 +1,6 @@
-Abrindo página principal: https://www.pingodoce.pt/receitas/coleccoes/cremes/
+Abrindo página principal: https://realpython.com/python-with-statement/
 Interação com a página principal concluída com sucesso.
-Foram encontradas 246 subpáginas.
+Foram encontradas 302 subpáginas.
 Subpágina aberta com sucesso.
 Capturas de tela salvas:
 capturas\pagina_principal.png
